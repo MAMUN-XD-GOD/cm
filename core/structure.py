@@ -1,14 +1,17 @@
 def analyze_structure(candles):
-    bull_power = sum(c["strength"] for c in candles if c["color"] == "bullish")
-    bear_power = sum(c["strength"] for c in candles if c["color"] == "bearish")
+    highs = [c["body"] + c["wick"] for c in candles]
+    lows = [c["body"] - c["wick"] for c in candles]
 
-    if bull_power > bear_power * 1.4:
-        return "UPTREND_CONTINUATION"
+    hh = highs[-1] > max(highs[:-1])
+    ll = lows[-1] < min(lows[:-1])
 
-    if bear_power > bull_power * 1.4:
-        return "DOWNTREND_CONTINUATION"
+    if hh and candles[-1]["strong"]:
+        return "UPTREND_BREAK_HOLD"
 
-    if abs(bull_power - bear_power) < 10:
-        return "CHOPPY_RANGE"
+    if ll and candles[-1]["strong"]:
+        return "DOWNTREND_BREAK_HOLD"
 
-    return "POSSIBLE_REVERSAL"
+    if hh or ll:
+        return "BREAK_NO_HOLD"
+
+    return "RANGE_STRUCTURE"
