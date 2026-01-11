@@ -1,14 +1,57 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
   <title>ChartMind AI</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>ChartMind AI</h1>
-  <input type="file" id="img">
-  <button onclick="send()">Analyze</button>
-  <pre id="out"></pre>
+
+<div class="app">
+
+  <header>
+    <h1>ChartMind <span>AI</span></h1>
+    <p>Pocket Option • Binary Intelligence</p>
+  </header>
+
+  <section class="upload-box">
+    <input type="file" id="screenshot" accept="image/*">
+    <label for="screenshot">📤 Upload Chart Screenshot</label>
+  </section>
+
+  <section class="signal-card" id="signalCard">
+    <h2>AI Signal</h2>
+
+    <div class="row">
+      <span>Direction</span>
+      <strong id="direction">—</strong>
+    </div>
+
+    <div class="row">
+      <span>Expiry</span>
+      <strong id="expiry">—</strong>
+    </div>
+
+    <div class="row">
+      <span>Confidence</span>
+      <strong id="confidence">—</strong>
+    </div>
+
+    <div class="note" id="note">Waiting for analysis…</div>
+
+    <div class="feedback">
+      <button class="win">WIN</button>
+      <button class="loss">LOSS</button>
+    </div>
+  </section>
+
+  <footer>
+    <p>Owner: David Mamun William</p>
+  </footer>
+
+</div>
+
 <script src="main.js"></script>
 </body>
-</html>
+        </html>
