@@ -1,18 +1,24 @@
 from core.patterns import detect_patterns
+from core.sr_engine import detect_sr
+from core.liquidity import detect_liquidity
 
 def generate_signal(candles, structure):
     patterns = detect_patterns(candles)
+    sr = detect_sr(candles)
+    liquidity = detect_liquidity(candles, sr)
     last = candles[-1]
 
-    # CONTINUATION
-    if "MOMENTUM" in patterns:
-        if structure.startswith("UPTREND") and last["color"] == "bullish":
+    # BREAK & HOLD continuation
+    if structure == "UPTREND_BREAK_HOLD" and last["color"] == "bullish":
+        if "MOMENTUM" in patterns:
             return "CALL"
-        if structure.startswith("DOWNTREND") and last["color"] == "bearish":
+
+    if structure == "DOWNTREND_BREAK_HOLD" and last["color"] == "bearish":
+        if "MOMENTUM" in patterns:
             return "PUT"
 
-    # REVERSAL CONFIRMATION
-    if "ENGULFING" in patterns or "PIN_BAR" in patterns:
+    # LIQUIDITY REVERSAL
+    if liquidity == "LIQUIDITY_SWEEP":
         if last["color"] == "bullish":
             return "CALL"
         if last["color"] == "bearish":
