@@ -1,9 +1,10 @@
 def suggest_expiry(candles):
-    avg_body = sum(c["body"] for c in candles) / len(candles)
+    last = candles[-1]
 
-    if avg_body > 15:
+    if last["strong"] and last["dominance"] > 0.7:
         return "1 MIN"
-    elif avg_body > 10:
+
+    if last["dominance"] > 0.55:
         return "2 MIN"
-    else:
-        return "3 MIN"
+
+    return "3 MIN"
