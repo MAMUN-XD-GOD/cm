@@ -30,3 +30,42 @@ def analyze_screenshot(path):
         "confidence": 40,
         "state": state
   }
+import cv2
+from vision.candle_detector import detect_candle_bias
+from vision.market_state import detect_market_state
+from vision.validator import validate_signal
+
+def analyze_screenshot(image_path):
+    img = cv2.imread(image_path)
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+    candle_bias = detect_candle_bias(img)
+    market_state = detect_market_state(gray)
+
+    if candle_bias == "NEUTRAL":
+        return {
+            "signal": "WAIT",
+            "confidence": 55,
+            "state": market_state,
+            "reason": "Indecision candle"
+        }
+
+    signal = "CALL" if candle_bias == "BULL" else "PUT"
+    valid, reason = validate_signal(signal, candle_bias, market_state)
+
+    if not valid:
+        return {
+            "signal": "WAIT",
+            "confidence": 52,
+            "state": market_state,
+            "reason": reason
+        }
+
+    base_conf = 72 if market_state == "TREND" else 60
+
+    return {
+        "signal": signal,
+        "confidence": base_conf,
+        "state": market_state,
+        "reason": "Trend + candle confirmation"
+        }
