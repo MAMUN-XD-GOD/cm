@@ -1,18 +1,24 @@
-from core.sr_engine import detect_sr
-from core.liquidity import detect_liquidity
+from core.smc import detect_fvg, detect_order_block, premium_discount
 
 def risk_check(candles, structure):
-    sr = detect_sr(candles)
-    liquidity = detect_liquidity(candles, sr)
+    fvg = detect_fvg(candles)
+    ob = detect_order_block(candles)
+    zone = premium_discount(candles)
     last = candles[-1]
 
-    if liquidity == "LIQUIDITY_SWEEP" and not last["strong"]:
-        return {"allow": False, "reason": "Liquidity sweep trap"}
+    # No smart money context
+    if not fvg and not ob:
+        return {"allow": False, "reason": "No smart money zone"}
 
-    if structure == "RANGE_STRUCTURE":
-        return {"allow": False, "reason": "Range market – no edge"}
+    # Wrong zone entry
+    if last["color"] == "bullish" and zone == "PREMIUM":
+        return {"allow": False, "reason": "Bullish entry in premium zone"}
 
-    if last["rejection"] and last["dominance"] < 0.4:
-        return {"allow": False, "reason": "Rejection near key level"}
+    if last["color"] == "bearish" and zone == "DISCOUNT":
+        return {"allow": False, "reason": "Bearish entry in discount zone"}
+
+    # Weak candle
+    if not last["strong"]:
+        return {"allow": False, "reason": "Weak smart money reaction"}
 
     return {"allow": True}
