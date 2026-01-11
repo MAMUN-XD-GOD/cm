@@ -1,17 +1,16 @@
 def risk_check(candles, structure):
     last = candles[-1]
-    prev = candles[-2]
 
-    # weak candle → no trade
-    if last["momentum"] == "weak":
-        return {"allow": False, "reason": "Weak momentum candle"}
+    # No power
+    if last["dominance"] < 0.45:
+        return {"allow": False, "reason": "Low candle dominance"}
 
-    # fake breakout logic
-    if last["color"] != prev["color"] and last["wick"] > last["body"]:
-        return {"allow": False, "reason": "Fake breakout / trap candle"}
+    # Trap candle
+    if last["rejection"] and last["dominance"] < 0.35:
+        return {"allow": False, "reason": "Rejection trap candle"}
 
-    # sideways market
-    if structure == "CHOPPY_RANGE":
-        return {"allow": False, "reason": "Market choppy / sideways"}
+    # Sideways protection
+    if "RANGE" in structure or "CHOPPY" in structure:
+        return {"allow": False, "reason": "Market indecision"}
 
     return {"allow": True}
