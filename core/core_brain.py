@@ -1,9 +1,9 @@
 from vision.vision_core import analyze_screenshot
 from core.decision_engine import decide
-from core.learning_engine import adjust_confidence
+from core.learning_engine import adjust_confidence, feedback
 from core.cooldown import in_cooldown
 
-def analyze_trade(image_path, last_trade="WIN", amount=1):
+def analyze_trade(image_path, pair="XAU/USD", timeframe="1m", last_trade="WIN", amount=1):
     if in_cooldown(45):
         return {
             "direction": "WAIT",
@@ -33,11 +33,12 @@ def analyze_trade(image_path, last_trade="WIN", amount=1):
             "note": decision.get("reason", "Filtered")
         }
 
-    final_conf = adjust_confidence(decision["confidence"])
+    # session memory integration
+    final_conf = adjust_confidence(decision["confidence"], pair, timeframe)
 
     return {
         "direction": decision["signal"],
         "expiry": decision["expiry"],
         "confidence": final_conf,
-        "note": "Adaptive signal (learning enabled)"
-    }
+        "note": f"Adaptive signal (session memory integrated) – {vision['reason']}"
+        }
