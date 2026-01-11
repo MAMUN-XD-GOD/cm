@@ -1,16 +1,18 @@
+from core.sr_engine import detect_sr
+from core.liquidity import detect_liquidity
+
 def risk_check(candles, structure):
+    sr = detect_sr(candles)
+    liquidity = detect_liquidity(candles, sr)
     last = candles[-1]
 
-    # No power
-    if last["dominance"] < 0.45:
-        return {"allow": False, "reason": "Low candle dominance"}
+    if liquidity == "LIQUIDITY_SWEEP" and not last["strong"]:
+        return {"allow": False, "reason": "Liquidity sweep trap"}
 
-    # Trap candle
-    if last["rejection"] and last["dominance"] < 0.35:
-        return {"allow": False, "reason": "Rejection trap candle"}
+    if structure == "RANGE_STRUCTURE":
+        return {"allow": False, "reason": "Range market – no edge"}
 
-    # Sideways protection
-    if "RANGE" in structure or "CHOPPY" in structure:
-        return {"allow": False, "reason": "Market indecision"}
+    if last["rejection"] and last["dominance"] < 0.4:
+        return {"allow": False, "reason": "Rejection near key level"}
 
     return {"allow": True}
