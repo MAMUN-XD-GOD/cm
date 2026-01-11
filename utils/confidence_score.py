@@ -1,16 +1,17 @@
-from core.smc import detect_fvg, detect_order_block
+from core.market_shift import detect_bos_choch
 
 def confidence_score(candles, structure):
-    score = 35
+    score = 40
+    shift = detect_bos_choch(candles)
     last = candles[-1]
 
-    if detect_fvg(candles):
-        score += 20
+    if "BOS" in shift:
+        score += 25
 
-    if detect_order_block(candles):
-        score += 20
+    if shift == "CHoCH":
+        score += 15
 
     if last["strong"]:
         score += 15
 
-    return min(score, 98)
+    return min(score, 99)
