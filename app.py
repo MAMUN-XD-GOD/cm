@@ -1,40 +1,36 @@
-from flask import Flask, request, jsonify, send_from_directory
-from core.image_loader import load_image
-from core.market_detector import detect_market
-from core.candle_reader import read_candles
-from core.structure import analyze_structure
-from core.signal_engine import generate_signal
-from core.expiry_engine import suggest_expiry
-from core.risk_guard import risk_check
-from utils.confidence_score import confidence_score
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+import os
+from core.core_brain import analyze_trade
+from core.learning_engine import update_stats
 
 app = Flask(__name__)
+CORS(app)
 
-@app.route("/")
-def ui():
-    return send_from_directory("ui", "index.html")
+UPLOAD_FOLDER = "uploads"
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 @app.route("/analyze", methods=["POST"])
 def analyze():
     if "image" not in request.files:
-        return jsonify({"error": "No image uploaded"}), 400
+        return jsonify({"error": "No screenshot uploaded"}), 400
 
-    img = load_image(request.files["image"])
-    if img is None:
-        return jsonify({"error": "Invalid or unclear screenshot"}), 400
+    image = request.files["image"]
+    image_path = os.path.join(UPLOAD_FOLDER, image.filename)
+    image.save(image_path)
 
-    market = detect_market(img)
-    candles = read_candles(img)
-    structure = analyze_structure(candles)
+    result = analyze_trade(image_path)
+    return jsonify(result)
 
-    risk = risk_check(candles, structure)
-    if not risk["allow"]:
-        return jsonify({
-            "signal": "WAIT",
-            "reason": risk["reason"]
-        })
+@app.route("/feedback", methods=["POST"])
+def feedback():
+    data = request.json
+    result = data.get("result")
+    stats = update_stats(result)
+    return jsonify({"status": "ok", "stats": stats})
 
-    signal = generate_signal(candles, structure)
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000, debug=True)    signal = generate_signal(candles, structure)
     expiry = suggest_expiry(candles)
     confidence = confidence_score(candles, structure)
 
