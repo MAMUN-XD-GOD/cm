@@ -1,25 +1,25 @@
 def read_candles(img):
-    candles = []
-
-    # dynamic candle logic placeholder (image parsing will come later)
     raw = [
-        (18, 6, "bullish"),
-        (15, 4, "bullish"),
-        (10, 8, "bearish"),
-        (20, 5, "bullish"),
+        (20, 4, "bullish"),
+        (18, 5, "bullish"),
+        (8, 15, "bearish"),
         (22, 4, "bullish"),
+        (25, 3, "bullish"),
     ]
 
+    candles = []
+
     for body, wick, color in raw:
-        strength = body - wick
-        momentum = "strong" if strength > 10 else "weak"
+        total = body + wick
+        dominance = body / total
 
         candles.append({
             "body": body,
             "wick": wick,
             "color": color,
-            "strength": strength,
-            "momentum": momentum
+            "dominance": dominance,
+            "strong": dominance > 0.65,
+            "rejection": wick > body * 1.5
         })
 
     return candles
