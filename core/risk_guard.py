@@ -1,22 +1,20 @@
-from core.market_shift import detect_bos_choch
-from core.smc import detect_fvg, detect_order_block
+from core.timeframe_bias import higher_tf_bias, lower_tf_entry
 
 def risk_check(candles, structure):
-    shift = detect_bos_choch(candles)
-    fvg = detect_fvg(candles)
-    ob = detect_order_block(candles)
+    htf = higher_tf_bias(candles)
+    ltf = lower_tf_entry(candles)
     last = candles[-1]
 
-    # No confirmation
-    if shift == "NO_SHIFT":
-        return {"allow": False, "reason": "No market shift confirmation"}
+    # No higher timeframe bias
+    if htf == "NO_CLEAR_BIAS":
+        return {"allow": False, "reason": "No HTF bias"}
 
-    # Fake CHoCH without smart money
-    if shift == "CHoCH" and not (fvg or ob):
-        return {"allow": False, "reason": "Unconfirmed CHoCH"}
+    # Late / weak entry
+    if ltf == "ENTRY_WEAK":
+        return {"allow": False, "reason": "Late or weak entry"}
 
-    # Weak reaction candle
-    if not last["strong"]:
-        return {"allow": False, "reason": "Weak BOS / CHoCH candle"}
+    # Exhausted candle
+    if last["dominance"] > 0.85:
+        return {"allow": False, "reason": "Move already extended"}
 
     return {"allow": True}
