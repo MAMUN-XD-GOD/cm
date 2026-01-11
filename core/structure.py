@@ -1,17 +1,15 @@
+from core.market_shift import detect_bos_choch
+
 def analyze_structure(candles):
-    highs = [c["body"] + c["wick"] for c in candles]
-    lows = [c["body"] - c["wick"] for c in candles]
+    shift = detect_bos_choch(candles)
 
-    hh = highs[-1] > max(highs[:-1])
-    ll = lows[-1] < min(lows[:-1])
+    if shift == "BOS_BULLISH":
+        return "BULLISH_CONTINUATION"
 
-    if hh and candles[-1]["strong"]:
-        return "UPTREND_BREAK_HOLD"
+    if shift == "BOS_BEARISH":
+        return "BEARISH_CONTINUATION"
 
-    if ll and candles[-1]["strong"]:
-        return "DOWNTREND_BREAK_HOLD"
+    if shift == "CHoCH":
+        return "POTENTIAL_REVERSAL"
 
-    if hh or ll:
-        return "BREAK_NO_HOLD"
-
-    return "RANGE_STRUCTURE"
+    return "NO_CLEAR_STRUCTURE"
