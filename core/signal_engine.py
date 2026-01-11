@@ -1,27 +1,21 @@
 from core.patterns import detect_patterns
-from core.sr_engine import detect_sr
-from core.liquidity import detect_liquidity
+from core.smc import detect_fvg, detect_order_block, premium_discount
 
 def generate_signal(candles, structure):
     patterns = detect_patterns(candles)
-    sr = detect_sr(candles)
-    liquidity = detect_liquidity(candles, sr)
+    fvg = detect_fvg(candles)
+    ob = detect_order_block(candles)
+    zone = premium_discount(candles)
     last = candles[-1]
 
-    # BREAK & HOLD continuation
-    if structure == "UPTREND_BREAK_HOLD" and last["color"] == "bullish":
-        if "MOMENTUM" in patterns:
+    # BUY LOGIC
+    if last["color"] == "bullish" and zone == "DISCOUNT":
+        if "MOMENTUM" in patterns and (fvg or ob):
             return "CALL"
 
-    if structure == "DOWNTREND_BREAK_HOLD" and last["color"] == "bearish":
-        if "MOMENTUM" in patterns:
-            return "PUT"
-
-    # LIQUIDITY REVERSAL
-    if liquidity == "LIQUIDITY_SWEEP":
-        if last["color"] == "bullish":
-            return "CALL"
-        if last["color"] == "bearish":
+    # SELL LOGIC
+    if last["color"] == "bearish" and zone == "PREMIUM":
+        if "MOMENTUM" in patterns and (fvg or ob):
             return "PUT"
 
     return "WAIT"
