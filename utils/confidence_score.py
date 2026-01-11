@@ -1,10 +1,14 @@
 def confidence_score(candles, structure):
-    score = 50
+    score = 40
+    last = candles[-1]
 
-    if structure != "RANGE":
+    if structure in ["UPTREND_CONTINUATION", "DOWNTREND_CONTINUATION"]:
+        score += 25
+
+    if last["momentum"] == "strong":
         score += 20
 
-    if candles[-1]["body"] > 12:
-        score += 15
+    if last["wick"] < last["body"]:
+        score += 10
 
     return min(score, 95)
